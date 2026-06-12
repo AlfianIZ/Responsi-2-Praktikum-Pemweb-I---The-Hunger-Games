@@ -27,15 +27,15 @@ include 'includes/header.php';
 
     <h2 class="section-title">Sedang Tren di Panem</h2>
     <div class="movie-grid">
-        <a href="pages/detail.php" class="movie-card">
+        <a href="pages/detail.php?id=1" class="movie-card">
             <img src="assets/img/the hunger games 2012.webp" alt="Poster The Hunger Games 2012" class="movie-poster">
             <div class="movie-info">
                 <h4>The Hunger Games</h4>
-                <p class="text-muted" style="font-size: 0.8rem;">2012 • Aksi • Sci-Fi</p>
+                <p class="text-muted" style="font-size: 0.8rem;">2012 • Aksi</p>
             </div>
         </a>
 
-        <a href="pages/detail.php" class="movie-card">
+        <a href="pages/detail.php?id=2" class="movie-card">
             <img src="assets/img/catchingfire.jpg" alt="Poster Catching Fire" class="movie-poster">
             <div class="movie-info">
                 <h4>Catching Fire</h4>
@@ -43,7 +43,7 @@ include 'includes/header.php';
             </div>
         </a>
 
-        <a href="pages/detail.php" class="movie-card">
+        <a href="pages/detail.php?id=3" class="movie-card">
             <img src="assets/img/mockiingjay pt 1.webp" alt="Mockingjay Part 1" class="movie-poster">
             <div class="movie-info">
                 <h4>Mockingjay Part 1</h4>
@@ -51,7 +51,7 @@ include 'includes/header.php';
             </div>
         </a>
 
-        <a href="pages/detail.php" class="movie-card">
+        <a href="pages/detail.php?id=4" class="movie-card">
             <img src="assets/img/mockiingjay pt 2.webp" alt="Mockingjay Part 2" class="movie-poster">
             <div class="movie-info">
                 <h4>Mockingjay Part 2</h4>
@@ -59,7 +59,7 @@ include 'includes/header.php';
             </div>
         </a>
 
-        <a href="pages/detail.php" class="movie-card">
+        <a href="pages/detail.php?id=5" class="movie-card">
             <img src="assets/img/theballad.webp" alt="Poster The Ballad of Songbirds & Snakes" class="movie-poster">
             <div class="movie-info">
                 <h4>The Ballad of Songbirds & Snakes</h4>

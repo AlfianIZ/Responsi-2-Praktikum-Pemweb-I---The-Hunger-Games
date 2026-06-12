@@ -1,96 +1,103 @@
+<?php
+session_start();
+require_once '../config/database.php';
+
+// Validasi ID
+if (!isset($_GET['id']) || empty($_GET['id'])) {
+    header("Location: ../index.php");
+    exit;
+}
+
+$id = (int) $_GET['id'];
+$query = mysqli_query($conn, "SELECT * FROM movies WHERE id = $id");
+$movie = mysqli_fetch_assoc($query);
+
+if (!$movie) {
+    echo "<p>Film tidak ditemukan.</p>";
+    exit;
+}
+?>
+
 <!DOCTYPE html>
 <html lang="id">
 
 <head>
     <meta charset="UTF-8">
-    <title>Detail Film - Panem Cinema</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detail Film - <?= htmlspecialchars($movie['title']); ?> | Panem Cinema</title>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 
 <body>
-    <nav class="navbar">
-        <div class="logo">
-            <h2>Panem Cinema</h2>
-        </div>
-        <div class="nav-links">
-            <a href="../index.php">Beranda</a>
-            <a href="../admin/dashboard.php">Dashboard</a>
-            <a href="../auth/login.php">Login</a>
-        </div>
-    </nav>
 
-    <div class="hero-detail hero-banner-main" style="background-image: linear-gradient(to top, #0b0f19, rgba(11, 15, 25, 0.4)), url('../assets/img/bannet_cf.jpg');">
-        <div style="z-index: 10;">
-            <span style="background: #ea580c; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem;">AKSI</span>
-            <span
-                style="background: #374151; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; margin-left: 5px;">2014</span>
-            <h1 style="font-size: 3rem; margin: 10px 0;">The Hunger Games: Mockingjay Part 1</h1>
-            <p style="color: #f97316;">★★★★☆ <span style="color: #94a3b8;">RATA-RATA RATING: 4.5/5</span></p>
-            <p style="max-width: 700px; margin-top: 15px;">Katniss Everdeen dengan enggan menjadi simbol pemberontakan
-                massal melawan Capitol yang otokratis. Saat perang yang akan menentukan nasib Panem meningkat, Katniss
-                harus memutuskan siapa yang bisa dia percayai.</p>
-        </div>
+<?php require_once '../includes/header.php'; ?>
+
+<div class="hero-detail hero-banner-main" 
+     style="background-image: linear-gradient(to top, #0b0f19, rgba(11, 15, 25, 0.4)), url('../assets/img/<?= htmlspecialchars($movie['hero_image']); ?>');">
+     
+    <div style="z-index: 10;">
+        <span style="background: #ea580c; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem;">
+            <?= htmlspecialchars($movie['genre']); ?>
+        </span>
+        <h1 style="font-size: 3rem; margin: 10px 0;"><?= htmlspecialchars($movie['title']); ?></h1>
+        <p style="max-width: 700px;"><?= htmlspecialchars($movie['synopsis']); ?></p>
     </div>
+</div>
+
+<div class="cast-grid">
+    <?php
+    $movie_id = $movie['id'];
+    $cast_query = mysqli_query($conn, "SELECT * FROM characters WHERE movie_id = $movie_id");
+    
+    while ($cast = mysqli_fetch_assoc($cast_query)):
+    ?>
+        <div class="cast-card">
+            <div class="cast-photo" style="width: 100%; height: 150px; background-color: #1f2937; display: flex; align-items: center; justify-content: center;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#4b5563" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="8" r="4"></circle>
+                    <path d="M20 21a8 8 0 0 0-16 0"></path>
+                </svg>
+            </div>
+            <h5><?= htmlspecialchars($cast['character_name']); ?></h5>
+        </div>
+    <?php endwhile; ?>
+</div>
 
     <div style="padding: 50px;">
-        <h3 style="border-left: 3px solid #ea580c; padding-left: 10px; margin-bottom: 20px;">Pemeran Pemberontakan</h3>
-        <div class="cast-grid">
-            <div class="cast-card">
-                <img src="../assets/img/katnis.png" alt="Katniss Everdeen" class="cast-photo">
-                <h5>Katniss Everdeen</h5>
-                <p class="text-muted" style="font-size: 0.8rem;">Sang Mockingjay</p>
+        <h2><?= htmlspecialchars($movie['title']); ?></h2>
+        <p>Genre: <?= htmlspecialchars($movie['genre']); ?> | Tahun: <?= $movie['release_year']; ?></p>
+        <p><?= htmlspecialchars($movie['synopsis']); ?></p>
+
+        <hr style="margin: 30px 0;">
+
+        <?php if (isset($_SESSION['user_id']) && $_SESSION['role'] == 'user'): ?>
+            <h3>Beri Ulasan Anda</h3>
+            <form action="../actions/review_process.php" method="POST">
+                <input type="hidden" name="movie_id" value="<?= $id; ?>">
+                <div class="form-group">
+                    <label>Rating (1-5)</label>
+                    <input type="number" name="rating" min="1" max="5" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Ulasan</label>
+                    <textarea name="review_text" class="form-control" required></textarea>
+                </div>
+                <button type="submit" name="kirim_ulasan" class="btn btn-primary">Kirim Ulasan</button>
+            </form>
+        <?php elseif (!isset($_SESSION['user_id'])): ?>
+            <p>Silakan <a href="../auth/login.php">login</a> untuk memberi ulasan.</p>
+        <?php endif; ?>
+
+        <h3>Ulasan Pengguna</h3>
+        <?php
+        $reviews = mysqli_query($conn, "SELECT reviews.*, users.username FROM reviews JOIN users ON reviews.user_id = users.id WHERE movie_id = $id");
+        while ($rev = mysqli_fetch_assoc($reviews)):
+            ?>
+            <div class="bg-dark-card" style="padding: 15px; margin-bottom: 10px; border-radius: 5px;">
+                <strong><?= htmlspecialchars($rev['username']); ?></strong> - Rating: <?= $rev['rating']; ?>/5
+                <p><?= htmlspecialchars($rev['review_text']); ?></p>
             </div>
-            <div class="cast-card">
-                <img src="../assets/img/peeta.png" alt="Peeta Mellark" class="cast-photo">
-                <h5>Peeta Mellark</h5>
-                <p class="text-muted" style="font-size: 0.8rem;">Tawanan Capitol</p>
-            </div>
-            <div class="cast-card">
-                <img src="../assets/img/President_Snow.webp" alt="President Snow" class="cast-photo">
-                <h5>President Snow</h5>
-                <p class="text-muted" style="font-size: 0.8rem;">Antagonis</p>
-            </div>
-        </div>
+        <?php endwhile; ?>
     </div>
 
-    <div style="padding: 0 50px 50px 50px;">
-        <div class="review-header-section">
-            <h3 style="border-left: 3px solid #ea580c; padding-left: 10px;">Ulasan Arsip</h3>
-            <a href="#" class="text-orange" style="font-size: 0.85rem; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">Tulis Ulasan</a>
-        </div>
-
-        <div class="reviews-list">
-            <div class="review-card">
-                <div class="review-user-info">
-                    <div class="reviewer-profile">
-                        <div class="avatar bg-orange">DC</div>
-                        <div>
-                            <h5 style="margin: 0;">District_Citizen_12</h5>
-                            <p class="text-muted" style="font-size: 0.8rem; margin: 0;">2 hari yang lalu</p>
-                        </div>
-                    </div>
-                    <div class="stars">★★★★★</div>
-                </div>
-                <p style="font-size: 0.95rem; color: #cbd5e1;">Kesimpulan yang memukau secara visual, berhasil menangkap suasana suram sekaligus harapan dari sebuah pemberontakan dengan sempurna. Penampilan aktornya sangat menonjol.</p>
-            </div>
-
-            <div class="review-card">
-                <div class="review-user-info">
-                    <div class="reviewer-profile">
-                        <div class="avatar bg-gray">CA</div>
-                        <div>
-                            <h5 style="margin: 0;">Capitol_Archivist</h5>
-                            <p class="text-muted" style="font-size: 0.8rem; margin: 0;">1 minggu yang lalu</p>
-                        </div>
-                    </div>
-                    <div class="stars">★★★★☆</div>
-                </div>
-                <p style="font-size: 0.95rem; color: #cbd5e1;">Alurnya sedikit melambat dibandingkan paruh pertama, namun intrik politik dan perkembangan karakternya membuat arsip ini wajib ditonton bagi para pelajar sejarah Panem.</p>
-            </div>
-        </div>
-    </div>
-
-    <?php
-    include '../includes/footer.php';
-    ?>
-
+    <?php require_once '../includes/footer.php'; ?>
