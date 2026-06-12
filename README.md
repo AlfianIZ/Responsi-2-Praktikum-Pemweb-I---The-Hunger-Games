@@ -13,3 +13,14 @@
 - Kelas A
 - Kelompok 6
 - Topik Proyek The HUnger Games
+
+------
+
+### Login user
+username: user
+password: user
+
+-----
+### login admin
+username: admin
+password: admin
